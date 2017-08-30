@@ -1,67 +1,36 @@
-I = imread('Fig3.08(a).jpg');
-J = hist_eq(I);
-subplot(2,2,1);
-imshow(I);
-subplot(2,2,2);
-histim(I)
-subplot(2,2,3);
-imshow( J );
-subplot(2,2,4);
-histim(J)
-
-function J = hist_eq(img)
-J = uint8(zeros(size(img,1),size(img,2)));
-freq = zeros(256,1);
-prob_f = zeros(256,1);
-prob_c = zeros(256,1);
-cum = zeros(256,1);
-output = zeros(256,1);
-
-for i=1:size(img,1)
-    for j=1:size(img,2)
-        val = img(i,j);
-        freq(val+1) = freq(val+1)+1;
-        prob_f(val+1) = freq(val+1)/(size(img,1)*size(img,2));
-    end
+% Seand Method
+TOL = 0.00001; a = pi/4; b = 3*pi/8; fa = sin(a)-a;
+fb = sin(b)-b; c = b-(fb*(b-a))/(fb-fa); fc = sin(c)-c;
+i = 1;
+disp('     n      Pn-1      f(Pn-1)      Pn      f(Pn)      Pn+1      f(Pn+1)');
+disp([i a fa b fb c fc]);
+c_list = [c];
+while abs(c-b) > TOL
+    a = b; b = c; fa = sin(a)-a;
+    fb = sin(b)-b; c = b-(fb*(b-a))/(fb-fa);
+    fc = sin(c)-c;
+    i = i + 1;
+    disp([i a fa b fb c fc]);
+    c_list = [c_list c];
 end
-sum = 0;
-for i=1:size(prob_f)
-    sum = sum + freq(i);
-    cum(i) = sum;
-    prob_c(i) = cum(i)/(size(img,1)*size(img,2));
-    output(i) = round(prob_c(i)*255);
+display(['Root calculated by Secant Method is x = ' num2str(c)]);
+stem(c_list); 
+
+%Newton Method
+a = pi/4; j = 1; fa = sin(a)-a;
+ga = cos(a)-1; d = a - fa/ga;
+fd = sin(d)-d;
+disp('   n      Pn-1      f(Pn-1)      Pn      f(Pn)');
+disp([i a fa d fd]);
+d_list = [d];
+while abs(a-d) > TOL
+    a = d; fa = sin(a)-a; ga = cos(a)-1;
+    d = a - fa/ga; fd = sin(d)-d;
+    j = j+1;
+    d_list = [d_list d];
+    disp([j a fa d fd]);
 end
+display(['Root calculated by Newton Method is x = ' num2str(d)]);
+stem(d_list);
 
-for i=1:size(img,1)
-    for j=1:size(img,2)
-        J(i,j) = output(img(i,j)+1);
-    end
-end
-%plot(output)
-end
-
-function histim(img)
-img = uint8(img);
-[count,bin] = hist(img(:),0:255);
-stem(bin,count,'Marker','none')
-
-hAx = gca;
-set(hAx, 'XLim',[0 255],'XTickLabel',[],'Box','On');
-
-hAx2 = axes('Position',get(hAx,'Position'), 'HitTest','off');
-image(0:255, [0 1], repmat(linspace(0,1,256),[1 1 3]), 'Parent',hAx2)
-set(hAx2, 'XLim',[0 255], 'YLim',[0 1], 'YTick',[], 'Box','on')
-
-set(hAx, 'Units','pixels')
-p = get(hAx, 'Position');
-set(hAx, 'Position',[p(1) p(2)+26 p(3) p(4)-26])
-set(hAx, 'Units','normalized')
-
-set(hAx2, 'Units','pixels')
-p = get(hAx2, 'Position');
-set(hAx2, 'Position',[p(1:3) 26])
-set(hAx2, 'Units','normalized')
-
-linkaxes([hAx;hAx2], 'x')
-set(gcf, 'CurrentAxes',hAx)
-end
+    
